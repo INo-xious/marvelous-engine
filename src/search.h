@@ -22,6 +22,7 @@ struct Limits {
     int mate = 0;
     int multiPV = 1;
     int moveOverhead = 30;
+    int contempt = 0;
     u64 nodes = 0;
     u64 softNodes = 0;
     bool infinite = false;

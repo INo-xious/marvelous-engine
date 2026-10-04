@@ -109,6 +109,8 @@ public:
         bestMoveChanges = 0;
         stability = 0;
         callsCnt = 0;
+        rootColor = pos.side_to_move();
+        contempt = limits.contempt * pawn_units() / 100;
         iterScore = VALUE_NONE;
         lastBest = Move::none();
         hist->new_search();
@@ -136,7 +138,8 @@ private:
         Value v = nnue.evaluate(pos);
         return std::clamp(v, -VALUE_TB_WIN_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
     }
-    Value draw_value() const { return VALUE_DRAW - 1 + Value(nodes.load(std::memory_order_relaxed) & 2); }
+    Value draw_score() const { return pos.side_to_move() == rootColor ? -contempt : contempt; }
+    Value draw_value() const { return draw_score() - 1 + Value(nodes.load(std::memory_order_relaxed) & 2); }
     int correction(const Stack* ss) const;
     Value corrected(Value raw, int corr) const {
         Value v = raw * (200 - pos.rule50()) / 200 + corr;
@@ -183,6 +186,8 @@ private:
     PieceToHistory sentinelHist;
     PieceToHistory sentinelCorr;
     int callsCnt = 0;
+    Color rootColor = WHITE;
+    Value contempt = 0;
     int stability = 0;
     Move lastBest = Move::none();
     Value iterScore = VALUE_NONE;
@@ -346,8 +351,8 @@ template<NodeType NT>
 Value Worker::qsearch(Stack* ss, Value alpha, Value beta) {
     constexpr bool PvNode = NT == PV;
 
-    if (alpha < VALUE_DRAW && pos.has_game_cycle(ss->ply)) {
-        alpha = VALUE_DRAW;
+    if (alpha < draw_score() && pos.has_game_cycle(ss->ply)) {
+        alpha = draw_score();
         if (alpha >= beta) return alpha;
     }
 
@@ -362,8 +367,8 @@ Value Worker::qsearch(Stack* ss, Value alpha, Value beta) {
     ss->inCheck = pos.in_check();
     ss->moveCount = 0;
 
-    if (pos.is_draw(ss->ply)) return VALUE_DRAW;
-    if (ss->ply >= MAX_PLY) return ss->inCheck ? VALUE_DRAW : evaluate();
+    if (pos.is_draw(ss->ply)) return draw_score();
+    if (ss->ply >= MAX_PLY) return ss->inCheck ? draw_score() : evaluate();
 
     const Key ttKey = pos.key() ^ Zobrist::rule50_key(pos.rule50());
     TTData tte;
@@ -461,7 +466,7 @@ Value Worker::search(Stack* ss, Value alpha, Value beta, int depth, bool cutNode
     constexpr bool PvNode = NT != NonPV;
     constexpr bool RootNode = NT == Root;
 
-    if (!RootNode && alpha < VALUE_DRAW && pos.has_game_cycle(ss->ply)) {
+    if (!RootNode && alpha < draw_score() && pos.has_game_cycle(ss->ply)) {
         alpha = draw_value();
         if (alpha >= beta) return alpha;
     }
@@ -804,7 +809,7 @@ Value Worker::search(Stack* ss, Value alpha, Value beta, int depth, bool cutNode
         }
     }
 
-    if (!moveCount) bestValue = excluded ? alpha : ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
+    if (!moveCount) bestValue = excluded ? alpha : ss->inCheck ? mated_in(ss->ply) : draw_score();
     else if (bestMove)
         update_all_stats(ss, bestMove, prevSq, quiets, nq, captures, nc, depth, ttMove, PvNode);
     else if (!priorCapture && prevSq != NO_SQ) {

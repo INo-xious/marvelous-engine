@@ -22,6 +22,7 @@ struct Options {
     int threads = 1;
     int moveOverhead = 30;
     int multiPV = 1;
+    int contempt = 0;
 } options;
 
 std::string lower(std::string s) {
@@ -42,6 +43,7 @@ void print_options() {
     std::printf("option name Threads type spin default 1 min 1 max 1024\n");
     std::printf("option name Move Overhead type spin default 30 min 0 max 5000\n");
     std::printf("option name MultiPV type spin default 1 min 1 max 218\n");
+    std::printf("option name Contempt type spin default 0 min -100 max 100\n");
     std::printf("option name Ponder type check default false\n");
     std::printf("option name UCI_ShowWDL type check default false\n");
     std::printf("option name EvalFile type string default <embedded>\n");
@@ -66,6 +68,8 @@ void set_option(std::istringstream& is) {
         options.moveOverhead = int(std::clamp(v, 0LL, 5000LL));
     } else if (n == "multipv" && parse_int(value, v)) {
         options.multiPV = int(std::clamp(v, 1LL, 218LL));
+    } else if (n == "contempt" && parse_int(value, v)) {
+        options.contempt = int(std::clamp(v, -100LL, 100LL));
     } else if (n == "uci_showwdl") {
         Search::showWDL = lower(value) == "true";
     } else if (n == "evalfile") {
@@ -105,6 +109,7 @@ void go(Position& pos, std::istringstream& is) {
     Search::Limits limits;
     limits.start = Search::now();
     limits.moveOverhead = options.moveOverhead;
+    limits.contempt = options.contempt;
     limits.multiPV = options.multiPV;
     std::string tok;
     long long v;
