@@ -292,7 +292,8 @@ Value Evaluator::evaluate(const Position& pos) {
     const int bucket = (pos.piece_count() - 2) / 4;
     const i16* w = net->outWeights[bucket];
     const i32 sum = screlu_dot(acc.v[stm], w) + screlu_dot(acc.v[~stm], w + L1);
-    return Value((i64(sum) / QA + net->outBias[bucket]) * SCALE / (QA * QB));
+    const i64 out = (i64(sum) / QA + net->outBias[bucket]) * SCALE / (QA * QB);
+    return Value(out * PAWN_UNITS / NET_PAWN);
 }
 
 Value evaluate_fresh(const Position& pos) {

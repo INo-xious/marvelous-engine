@@ -12,8 +12,10 @@ constexpr int OUTPUT_BUCKETS = 8;
 constexpr int QA = 255;
 constexpr int QB = 64;
 constexpr int SCALE = 400;
-// internal eval units per pawn (100 cp), from a win-rate fit of the embedded net
-constexpr int PAWN_UNITS = 100;
+// win-rate fit of the trained net: an eval of NET_PAWN wins 50% for the side to move.
+// Output is rescaled so that this point lands on PAWN_UNITS, the unit the search margins assume.
+constexpr int NET_PAWN = 390;
+constexpr int PAWN_UNITS = 250;
 
 // king buckets over the half board (files a-d), rank 1 first
 constexpr int BucketLayout[32] = {
