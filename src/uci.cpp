@@ -14,11 +14,11 @@
 
 namespace {
 
-constexpr const char* EngineName = "Marvelous";
+constexpr const char* EngineName = "Marvelous 1.0";
 constexpr const char* EngineAuthor = "Marvel Harisson";
 
 struct Options {
-    int hash = 64;
+    int hash = 256;
     int threads = 1;
     int moveOverhead = 30;
     int multiPV = 1;
@@ -39,7 +39,7 @@ bool parse_int(const std::string& s, long long& out) {
 }
 
 void print_options() {
-    std::printf("option name Hash type spin default 64 min 1 max 65536\n");
+    std::printf("option name Hash type spin default 256 min 1 max 65536\n");
     std::printf("option name Threads type spin default 1 min 1 max 1024\n");
     std::printf("option name Move Overhead type spin default 30 min 0 max 5000\n");
     std::printf("option name MultiPV type spin default 1 min 1 max 218\n");

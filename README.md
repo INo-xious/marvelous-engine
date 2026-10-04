@@ -19,7 +19,7 @@ On Windows, build from an MSYS2 MinGW64 shell (`pacman -S mingw-w64-x86_64-clang
 
 | Option | Default | Notes |
 | --- | --- | --- |
-| Hash | 64 | Transposition table size in MB |
+| Hash | 256 | Transposition table size in MB |
 | Threads | 1 | Search threads (Lazy SMP) |
 | Move Overhead | 30 | Milliseconds kept in reserve per move for communication lag |
 | MultiPV | 1 | Number of principal variations to report |
